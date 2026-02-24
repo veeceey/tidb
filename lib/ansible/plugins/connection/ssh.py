@@ -319,7 +319,7 @@ DOCUMENTATION = """
         description:
           - This sets the directory to use for ssh control path if the control path setting is null.
           - Also, provides the ``%(directory)s`` variable for the control path setting.
-        type: path
+        type: string
         env:
           - name: ANSIBLE_SSH_CONTROL_PATH_DIR
         ini:

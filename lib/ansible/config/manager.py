@@ -14,6 +14,8 @@ import stat
 import tempfile
 import typing as t
 
+import ansible.constants as C
+
 from collections import ChainMap
 from collections.abc import Mapping, Sequence
 from jinja2.nativetypes import NativeEnvironment
@@ -402,13 +404,11 @@ class ConfigManager:
             try:
                 # FIXME: This really should be using an immutable sandboxed native environment, not just native environment
                 template = NativeEnvironment().from_string(value)
-                # Use existing constants as fallback for template variables (e.g. ANSIBLE_HOME)
-                # so plugin defaults can reference base configuration values.
-                try:
-                    import ansible.constants as C
-                    render_vars = ChainMap(variables, vars(C))
-                except (ImportError, AttributeError):
-                    render_vars = variables
+                # Provide base config values for plugin defaults that reference them
+                # as template variables (e.g. '{{ ANSIBLE_HOME ~ "/cp" }}').
+                # If a new base config variable needs to be available here, add it to
+                # this dict and keep it in sync with any plugin defaults that use it.
+                render_vars = ChainMap(variables, {'ANSIBLE_HOME': C.ANSIBLE_HOME})
                 value = template.render(render_vars)
             except Exception as ex:
                 self._errors.append((f'Failed to template default for config {key_name}.', ex))
